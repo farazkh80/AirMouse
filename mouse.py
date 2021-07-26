@@ -46,11 +46,15 @@ while True:
             if fingers == [0,0,0,0,0]:
                 start = False
 
-            # scrolling
-            if fingers == [1,1,1,1,1]:
+            # scrolling slow
+            if fingers == [0,1,1,1,1]:
                 pyautogui.scroll(25)
             elif fingers == [1,1,0,0, 0]:
                 pyautogui.scroll(-25)
+
+            # scrolling fast
+            elif fingers == [1,1,1,1,1]:
+                pyautogui.scroll(100)
 
             # 4. Only Index Finger : Moving Mode
             elif fingers[1] == 1 and fingers[2] == 0:
