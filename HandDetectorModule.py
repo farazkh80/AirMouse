@@ -1,21 +1,26 @@
+"""
+A hand detection and finger tracking module built with mediapipe solutions
+and openCV for finger coordinate detection and status tracking
+"""
+
 import cv2
 import mediapipe as mp
 import time
 import math
 
 class HandDetector():
-    def __init__(self, mode=False, maxHands =  2, detectionCon=0.5, trackCon=0.5) -> None:
+    def __init__(self, mode=False, maxHands = 1, detectionCon=0.5, trackCon=0.5) -> None:
         self.mode = mode
-        self.maxHands = 2
+        self.maxHands = maxHands
         self.detectionCon = detectionCon
         self.trackCon = trackCon
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(self.mode, self.maxHands, self.detectionCon, self.trackCon)
         self.mpDraw = mp.solutions.drawing_utils
         self.results = None
+        self.lmList = []
         self.tipIds = [4,8,12,16,20]
-        self.lmList = None
-    
+        
     def findHands(self, img, draw=True):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(imgRGB)
@@ -27,7 +32,7 @@ class HandDetector():
         
         return img
     
-    def findPosition(self, img, handNo=0, draw=True) -> list:
+    def findLandmarkPosition(self, img, handNo=0, draw=True) -> list:
         self.lmList = []
 
         if self.results.multi_hand_landmarks:
@@ -42,14 +47,13 @@ class HandDetector():
         return self.lmList
 
     def drawCircleOnPoint(self, img, pId) -> None:
-        self.findPosition(img)
+        self.findLandmarkPosition(img)
         if len(self.lmList) != 0 and pId >=0 and pId <= 20:
             cv2.circle(img, (self.lmList[pId][1], self.lmList[pId][2]), 10, (255, 0, 255), cv2.FILLED)
 
-    def MultiplefingersUp(self) -> list:
+    def multipleFingersUp(self) -> list:
         fingers = []
         if len(self.lmList) != 0:
-            
             # Thumb
             # facing inside of hand
             if self.lmList[1][1] < self.lmList[0][1]:
@@ -97,10 +101,12 @@ class HandDetector():
 
         return False
 
-    def getFingerUp(self, tipId) -> tuple(int, int):
+    def getFingerUpCoords(self, tipId):
         x, y = None, None
         if(self.fingerUp(tipId)):
             x, y = self.lmList[tipId][1], self.lmList[tipId][2]
+
+        return (x, y)
 
     def findDistance(self, p1, p2, img, draw=True,r=15, t=3):
         x1, y1 = self.lmList[p1][1:]
@@ -126,8 +132,8 @@ def main():
         success, img = cap.read()
         detector.findHands(img)
 
-        detector.findPosition(img, 0)
-        fingers = detector.MultiplefingersUp()
+        detector.findLandmarkPosition(img, 0)
+        fingers = detector.multipleFingersUp()
 
         cTime = time.time()
         fps = 1/(cTime-pTime)
