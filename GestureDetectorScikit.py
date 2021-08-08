@@ -10,7 +10,7 @@ import os
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression, RidgeClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import accuracy_score
 import pickle
@@ -51,9 +51,8 @@ class GestureDetector(object):
         self.model_accuracy = {} # models accuracy dict
 
         self.mp_drawing = mp.solutions.drawing_utils # drawing helper
-        # hands solutions
-        self.mp_hands = mp.solutions.hands 
-        self.hand = self.mp_hands.Hands(max_num_hands=1)
+        self.mp_hands = mp.solutions.hands # hands solutions
+        self.hand = self.mp_hands.Hands(max_num_hands=1) # hands construction
         self.landmarks = None # hand landmarks
 
         self.image = None # image for detections
