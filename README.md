@@ -72,7 +72,7 @@ any of `GestureClassifierTorch.py` and `GestureClassifierScikit.py` can use `/da
 
 ## Usage
 
-![Demo](Demo.mp4)
+![Demo.mp4](demo.gif)
 
 ##### Basic Mode Operations:
 
