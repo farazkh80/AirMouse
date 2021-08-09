@@ -1,5 +1,6 @@
 from HandDetectorModule import HandDetector
 import cv2
+import os
 import numpy as np
 import GestureDetectorScikit as gds
 from GestureDetectorTorch import GestureClassifierNet, GestureDataset
@@ -7,6 +8,7 @@ import GestureDetectorTorch as gdt
 import autopy
 import pyautogui
 import pywhatkit
+import time
 
 class MouseController():
     def __init__(self, gesture_dataset_file='hands-coords.csv', pre_trained=False, gesture_model_file=None, library='PYTORCH', width=640, height=480):
@@ -54,6 +56,7 @@ class MouseController():
         self.pinky = 20
 
         self.gesture = None # classified gesture
+        self.operation_mode = 'READY'
         self.gesture_prob = None # classified gesture probability
         
     def setup(self):
@@ -77,24 +80,50 @@ class MouseController():
         """
         # Operation: zoom in
         if self.gesture == 'OPEN':
+            self.operation_mode = "Zoom In"
             pyautogui.keyDown('ctrl')
             pyautogui.keyDown('alt')
-            pyautogui.scroll(50)
+            pyautogui.scroll(25)
             pyautogui.keyUp('alt')
             pyautogui.keyUp('ctrl')
 
         # Operation: zoom out
         elif self.gesture == 'CLOSE':
+            self.operation_mode = "Zoom Out"
             pyautogui.keyDown('ctrl')
             pyautogui.keyDown('alt')
-            pyautogui.scroll(-50)
+            pyautogui.scroll(-25)
             pyautogui.keyUp('alt')
             pyautogui.keyUp('ctrl')
 
-        # Operation: Play Video on youtube
+        # Operation: Play happy songs on youtube
         elif self.gesture == 'Thumps-Up':
-            #pywhatkit.playonyt("Country Songs")
+            self.operation_mode = "Play Happy Songs"
+            time.sleep(1)
+            pywhatkit.playonyt("Happy Songs")
             self.gesture_enabled = False
+            
+        # Operation: Play sad songs on youtube
+        elif self.gesture == 'Thumps-Down':
+            self.operation_mode = "Exit Gesture Mode"
+            time.sleep(1)
+            self.gesture_enabled = False
+
+
+        # Operation: Play sad songs on youtube
+        elif self.gesture == 'Swag':
+            self.operation_mode = "Open Spotify"
+            os.startfile("C:/Users/Faraz Khoubsirat/AppData/Roaming/Spotify/Spotify.exe")
+            self.gesture_enabled = False
+
+        # Operation: Exit gesture mode
+        elif self.gesture == 'Peace':
+            self.operation_mode = "Print Peace"
+            print("PEACEEE")
+
+        else:
+            self.operation_mode = None
+            
 
     def gesture_detection(self):
         """
@@ -123,17 +152,21 @@ class MouseController():
             if self.start and self.fingers:
                 # stop airmouse
                 if self.fingers == [0,0,0,0,0]: # all fingers closed
+                    self.operation_mode='Stop AirMouse'
                     self.start = False
 
                 # scrolling mode
                 elif self.fingers == [1,1,1,1,1]: # all fingers up
-                    pyautogui.scroll(25) # scroll up
+                    self.operation_mode='Scroll Up'
+                    pyautogui.scroll(40) # scroll up
                 
                 elif self.fingers == [0,1,1,1, 1]:
-                    pyautogui.scroll(-25) # scroll down
+                    self.operation_mode='Scroll Down'
+                    pyautogui.scroll(-40) # scroll down
 
                 # only index finger is up: cursor moving Mode
                 elif self.fingers == [0,1,0,0,0]:
+                    self.operation_mode='Cursor Moving'
                     # get the tip of the index finger
                     x1, y1 = self.lmList[self.index][1:]
 
@@ -152,6 +185,7 @@ class MouseController():
                     
                 # both index and middle fingers are up: Clicking Mode
                 elif self.fingers == [0,1,1,0,0]:
+                    self.operation_mode='CLICK'
                     # find distance between index and middle fingers
                     length, img, lineInfo = self.handDetector.findDistance(self.index, self.middle, self.image)
 
@@ -162,12 +196,14 @@ class MouseController():
                         autopy.mouse.click()
                 
                 # enable gesture mode
-                elif self.fingers == [1,1,1,0,0]: # if thump, index and middle finger are up
+                elif self.fingers == [0,1,0,0,1]: # if index and pinky finger are up
+                    self.operation_mode='Enter Gesture Mode'
                     self.gesture_enabled = True
 
             else:
                 # start airmouse
                 if self.fingers == [1,0,0,0,0]: # if only thump is up
+                    self.operation_mode='Start AirMouse'
                     self.start = True       
     
     def fingers_detection(self):
@@ -190,13 +226,32 @@ class MouseController():
         self.setup()
         # while the camera is opening
         while self.cap.isOpened():
+            _, self.image = self.cap.read()
+            self.image.flags.writeable = True
+        
+
             # fingers mode
             if self.gesture_enabled is False:
                 self.fingers_detection()
+                # Put status box
+                cv2.rectangle(self.image, (0,0), (350, 60), (245, 117, 16), -1)
+
+                # Display Class
+                cv2.putText(self.image, 'Basic'
+                            , (95,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+                cv2.putText(self.image, self.operation_mode
+                            , (90,40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
 
             # gesture mode
             elif self.gesture_enabled:
                 self.gesture_detection()
+                # Put status box
+                cv2.rectangle(self.image, (0,0), (350, 60), (245, 117, 16), -1)
+                # Display Class
+                cv2.putText(self.image, 'Gesture'
+                            , (95,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+                cv2.putText(self.image, f"{self.gesture} ({self.operation_mode})"
+                            , (90,40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
 
             # end if key is q
             if cv2.waitKey(10) & 0xFF == ord('q'):
@@ -208,7 +263,7 @@ class MouseController():
         cv2.destroyAllWindows()
 
 def main():
-    mc = MouseController(pre_trained=True, gesture_model_file='gb-14-09-21-01-08-2021', library="SCIKIT")
+    mc = MouseController(pre_trained=True, gesture_model_file='torch-mc-16-52-56-08-08-2021', library="PYTORCH")
     mc.start_detection()
 
 if __name__ == "__main__":

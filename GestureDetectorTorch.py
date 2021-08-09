@@ -337,6 +337,8 @@ class GestureDetector(object):
                 print(f'Epoch {e+0:03}: | Train Loss: {train_epoch_loss/len(self.train_loader):.5f} | Val Loss: {val_epoch_loss/len(self.val_loader):.5f} | Train Acc: {train_epoch_acc/len(self.train_loader):.3f}| Val Acc: {val_epoch_acc/len(self.val_loader):.3f}')
         print(f"Training Status: SUCCESSFUL")
 
+        self.save_model()
+
     def evaluate(self):
         """
         Evaluates Model
@@ -403,9 +405,6 @@ class GestureDetector(object):
         """
         self.detect_landmarks(cap)
 
-        # Get status box
-        cv2.rectangle(self.image, (0,0), (250, 60), (245, 117, 16), -1)
-
         if self.landmarks:
             # Export coordinates
             try:
@@ -425,12 +424,6 @@ class GestureDetector(object):
                     y_test_pred = self.detection_model(X)
                     _, y_pred_tags = torch.max(y_test_pred, dim = 1)
                     self.gesture_class = self.le.inverse_transform(y_pred_tags.cpu().numpy())[0]
-
-                # Display Class
-                cv2.putText(self.image, 'CLASS'
-                            , (95,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
-                cv2.putText(self.image, self.gesture_class.split(' ')[0]
-                            , (90,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
                 self.detecting=True
             
