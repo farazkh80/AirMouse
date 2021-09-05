@@ -1,7 +1,8 @@
 # AirMouse
 
 A hands-free PC control module using live hand gesture detection and finger movement tracking.
-With AirMouse, basic mouse operations such as clicking, moving cursor, scrolling and zooming are possible without even touching the mouse. Moreover, AirMouse' gesture detection extension adds on the possibility of user defined gestures and computer operations such as playing your favorite Spotify playlist by showing a thumps up!
+<br>
+With AirMouse, basic mouse operations such as clicking, moving cursor and scrolling are possible without even touching the mouse. Moreover, AirMouse' gesture detection extension adds on the possibility of user defined gestures and computer operations such as playing your favorite Spotify playlist by showing a thumps up!
 
 # Table of Contents
 
@@ -73,7 +74,7 @@ python MouseController.py
 
 # Motivation
 
-AirMouse is a personal project inspired by Google's Mediapipe Machine Learning solutions for hand detection. Using the coordination data collected by Mediapipe solutions, AirMouse takes the human-computer interaction experience to the next level by making computer control more personalized and creative.
+AirMouse is a personal project inspired by Google's [Mediapipe](https://google.github.io/mediapipe/solutions/hands) Machine Learning solutions for hand detection. Using the coordination data collected by [Mediapipe](https://google.github.io/mediapipe/solutions/hands) solutions, AirMouse takes the human-computer interaction experience to the next level by making computer control more personalized and creative.
 
 # Project Overview
 
@@ -107,16 +108,15 @@ AirMouse
 `MouseController.py` is the main controller that calls upon `HandDetectorModule.py` for hand detection and finger position tracking when in Basic Mode and calls either of `GestureClassifierTorch.py` and `GestureClassifierScikit.py` modules for detecting the gesture being shown when in Gesture Mode.
 
 When in **Basic** Mode:
-`HandDetectorModule.py` is responsible for detecting the position of the hand using OpenCV and then extract the hand landmark coordinates using Mediapipe Machine Learning Solutions `HandDetectorModule.py` can then determine the finger tip position and whether the fingers are up or down for automating basic operations such as moving mouse cursor around with the movement of index finger or clicking when index finger and middle finger are close to each other.
+`HandDetectorModule.py` is responsible for detecting the position of the hand using OpenCV and then extract the hand landmark coordinates using [Mediapipe](https://google.github.io/mediapipe/solutions/hands) Machine Learning Solutions `HandDetectorModule.py` can then determine the finger tip position and whether the fingers are up or down for automating basic operations such as moving mouse cursor around with the movement of index finger or clicking when index finger and middle finger are close to each other.
 
 When in **Gesture** Mode:
-any of `GestureClassifierTorch.py` and `GestureClassifierScikit.py` can use `/data/hands-coords.csv` data for training a Multi Classification Neural Network Model(Pytorch) or a pre-defined Classification model such as Logistic Regression or Random Forest Classifier(Scikit-learn) and predicting the gesture being captured by OpenCV webcam. Upon predicting the gesture class, the `MouseController.py` can perform personalized computer operations such as playing a specific video or showing the current weather outside.
+Either of `GestureClassifierTorch.py` and `GestureClassifierScikit.py` can use `/data/hands-coords.csv` data for training a Multi Classification Neural Network Model(Pytorch) or a pre-defined Classification model such as Logistic Regression or Random Forest Classifier(Scikit-learn) and predicting the gesture being captured by OpenCV webcam. Upon predicting the gesture class, the `MouseController.py` can perform personalized computer operations such as playing a specific video or showing the current weather outside.
 
 # Current Issues
 
-- Searching dataset initialization takes place before each new search, reducing the searching speed
-- Model loading from checkpoint also happens before each summarization task
-- Constant, non-configurable `text_max_token_len` of 512 and `summary_max_token_len` of 128 as suggested by the original [T5](https://arxiv.org/abs/1910.10683) paper, limit the word-range of input and output text
+- Certain computer operations such as zooming-in and zooming-out reduces the video capture speed to 2-3 FPS, due to their complex automation.
+- Gesture mode operations cannot be used consecutively without switching to basic mode in between, due to gesture classification per FPS.
 
 # Contributing
 
@@ -128,28 +128,21 @@ A detailed guide about project specifics and in-depth architecture analysis will
 
 - Fixing Issues:
 
-  - Avoid searching dataset initialization from happening before each search by either running both the text summarization and searching engines in a parallel setup or storing search dataset in a database.
-  - Load model from checkpoint only once at the beginning of the program or just before the first summarization prompt
-  - Add configurable `text_max_token_len` and `summary_max_token_len` to increase text word-range flexibility.
+  - Stay in Gesture Mode unless prompted to change by user
+  - Move zooming to basic mode
 
 - New Features:
-  - Fine-tune T5 Models with higher number of parameters such as `t5-large` and `t5-3B` for better results.
-  - Add other NLP models such as `BERT` and `ALBERT` for performance comparison.
-  - Add a web news scrapper to maintain an up-to-date version of latest most popular `n` news.
+  - Add configurable gesture detection API for custom operations
+  - Add holistic data collector for emotion detection
+  - Add AirKeyboard
 
 # Acknowledgements
 
-T5 Text Summarizer
-
-- [Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer](https://arxiv.org/abs/1910.10683)
-- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
-- [Hugging Face T5 API](https://huggingface.co/transformers/model_doc/t5.html)
-- [PyTorch Lightning Trainer](https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html)
-- [Text Summarization with T5](https://www.youtube.com/watch?v=KMyZUIraHio)
-
-Search Engine
-
-- [Building a Search Engine with C++](https://www.education-ecosystem.com/nikos_tsiougkranas/ljJg5-how-to-build-a-search-engine-in-c/yDd46-intro-how-to-build-a-search-engine-in-c/)
+- [Mediapipe Hand Detector](https://google.github.io/mediapipe/solutions/hands)
+- [Multi Classification with PyTorch](https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab)
+- [AI Body Language Decoder](https://www.youtube.com/watch?v=pG4sUNDOZFg)
+- [AI Face Body and Hand Posen Estimation](https://www.youtube.com/watch?v=pG4sUNDOZFg)
+- [FingerDetection](https://www.youtube.com/watch?v=NZde8Xt78Iw)
 
 # License
 
