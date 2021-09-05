@@ -1,6 +1,6 @@
 from HandDetectorModule import HandDetector
 import cv2
-import os
+import webbrowser
 import numpy as np
 import GestureDetectorScikit as gds
 from GestureDetectorTorch import GestureClassifierNet, GestureDataset
@@ -78,6 +78,7 @@ class MouseController():
         """
         Automated operation handler based on the detected self.gesture
         """
+
         # Operation: zoom in
         if self.gesture == 'OPEN':
             self.operation_mode = "Zoom In"
@@ -96,30 +97,31 @@ class MouseController():
             pyautogui.keyUp('alt')
             pyautogui.keyUp('ctrl')
 
-        # Operation: Play happy songs on youtube
+        # Operation: Play country songs on youtube
         elif self.gesture == 'Thumps-Up':
             self.operation_mode = "Play Happy Songs"
             time.sleep(1)
-            pywhatkit.playonyt("Happy Songs")
+            pywhatkit.playonyt("https://www.youtube.com/watch?v=QTpxT-Wie1s&t=919s")
             self.gesture_enabled = False
-            
-        # Operation: Play sad songs on youtube
+
+        # Operation: Play Sad Songs
         elif self.gesture == 'Thumps-Down':
+            self.operation_mode = "Play Happy Songs"
+            time.sleep(1)
+            pywhatkit.playonyt("https://www.youtube.com/watch?v=Y_oD111dK7c")
+            self.gesture_enabled = False
+
+        # Operation: Open Swag Pic
+        elif self.gesture == 'Swag':
+            self.operation_mode = "Swag Pic"
+            webbrowser.open("https://wallpaper.dog/large/17215240.jpg")
+            self.gesture_enabled = False
+
+        # Operation: Exit Gesture Mode
+        elif self.gesture == 'Peace':
             self.operation_mode = "Exit Gesture Mode"
             time.sleep(1)
             self.gesture_enabled = False
-
-
-        # Operation: Play sad songs on youtube
-        elif self.gesture == 'Swag':
-            self.operation_mode = "Open Spotify"
-            os.startfile("C:/Users/Faraz Khoubsirat/AppData/Roaming/Spotify/Spotify.exe")
-            self.gesture_enabled = False
-
-        # Operation: Exit gesture mode
-        elif self.gesture == 'Peace':
-            self.operation_mode = "Print Peace"
-            print("PEACEEE")
 
         else:
             self.operation_mode = None
@@ -164,8 +166,8 @@ class MouseController():
                     self.operation_mode='Scroll Down'
                     pyautogui.scroll(-40) # scroll down
 
-                # only index finger is up: cursor moving Mode
-                elif self.fingers == [0,1,0,0,0]:
+                # cursor moving Mode
+                elif self.fingers == [0,1,0,0,0]: # only index finger is up: 
                     self.operation_mode='Cursor Moving'
                     # get the tip of the index finger
                     x1, y1 = self.lmList[self.index][1:]
@@ -183,8 +185,8 @@ class MouseController():
                     cv2.circle(self.image, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
                     self.plocX, self.plocY = self.clocX, self.clocY
                     
-                # both index and middle fingers are up: Clicking Mode
-                elif self.fingers == [0,1,1,0,0]:
+                # Clicking Mode
+                elif self.fingers == [0,1,1,0,0]: # both index and middle fingers are up and touching 
                     self.operation_mode='CLICK'
                     # find distance between index and middle fingers
                     length, img, lineInfo = self.handDetector.findDistance(self.index, self.middle, self.image)
@@ -196,7 +198,7 @@ class MouseController():
                         autopy.mouse.click()
                 
                 # enable gesture mode
-                elif self.fingers == [0,1,0,0,1]: # if index and pinky finger are up
+                elif self.fingers == [0,0,0,0,1]: # if only pinky finger is up
                     self.operation_mode='Enter Gesture Mode'
                     self.gesture_enabled = True
 
@@ -225,6 +227,7 @@ class MouseController():
         """
         self.setup()
         # while the camera is opening
+        pTime = 0
         while self.cap.isOpened():
             _, self.image = self.cap.read()
             self.image.flags.writeable = True
@@ -252,6 +255,15 @@ class MouseController():
                             , (95,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
                 cv2.putText(self.image, f"{self.gesture} ({self.operation_mode})"
                             , (90,40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+
+            # Display Frame Rate
+            cTime = time.time()
+            fps = 1 / (cTime - pTime)
+            pTime = cTime
+            cv2.putText(self.image, 'FPS:'
+                        , (10,80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+            cv2.putText(self.image, str(int(fps))
+                        , (60,80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)        
 
             # end if key is q
             if cv2.waitKey(10) & 0xFF == ord('q'):

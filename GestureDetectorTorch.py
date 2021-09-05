@@ -17,6 +17,7 @@ from datetime import datetime
 import pickle
 
 import torch
+from torch._C import device
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
